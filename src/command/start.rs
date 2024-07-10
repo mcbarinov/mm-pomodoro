@@ -1,7 +1,10 @@
 use std::fs::File;
+use std::sync::Arc;
+use std::time::Duration;
 
 use daemonize::Daemonize;
 use tokio::net::UnixListener;
+use tokio::sync::Notify;
 use tokio_stream::wrappers::UnixListenerStream;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
@@ -48,14 +51,29 @@ pub fn run(interval: u64) {
     }
 }
 
-async fn start_grpc_server(_interval: u64) -> Result<(), Box<dyn std::error::Error>> {
+async fn start_grpc_server(interval: u64) -> Result<(), Box<dyn std::error::Error>> {
     let path = "/tmp/ptimer.sock";
     let _ = tokio::fs::remove_file(path).await; // TODO: ?
     let uds = UnixListener::bind(path)?;
     let uds_stream = UnixListenerStream::new(uds);
 
+    let notify = Arc::new(Notify::new());
+    let notify_clone = Arc::clone(&notify);
+
+    tokio::spawn(async move {
+        tokio::time::sleep(Duration::from_secs(interval)).await;
+        notify_clone.notify_one();
+        println!("timer!");
+    });
+
     println!("Listening on: {}", path);
-    Server::builder().add_service(TimerServiceServer::new(RpcService {})).serve_with_incoming(uds_stream).await?;
+    Server::builder()
+        .add_service(TimerServiceServer::new(RpcService {}))
+        .serve_with_incoming_shutdown(uds_stream, async {
+            notify.notified().await;
+            println!("Shutting down...");
+        })
+        .await?;
 
     Ok(())
 }
