@@ -1,0 +1,17 @@
+syntax = "proto3";
+package timer;
+
+service TimerService {
+  rpc Status(Empty) returns (Status);
+  rpc Pause(Empty) returns (Status);
+  rpc Resume(Empty) returns (Status);
+  rpc Stop(Empty) returns (Status);
+}
+
+message Empty {
+
+}
+
+message Status {
+  string status = 1;
+}
