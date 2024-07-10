@@ -7,10 +7,16 @@ use crate::command;
 #[command(version)]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
-#[derive(Subcommand)]
+impl Cli {
+    fn command(&self) -> Commands {
+        self.command.clone().unwrap_or(Commands::Status)
+    }
+}
+
+#[derive(Subcommand, Clone)]
 enum Commands {
     /// Start a new pomodoro timer
     Start {
@@ -33,7 +39,7 @@ enum Commands {
 
 pub fn run() {
     let cli = Cli::parse();
-    match cli.command {
+    match cli.command() {
         Commands::Status => command::status_run(),
         Commands::Pause => command::pause_run(),
         Commands::Resume => command::resume_run(),
