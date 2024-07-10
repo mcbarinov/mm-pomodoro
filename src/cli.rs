@@ -4,6 +4,7 @@ use crate::command;
 
 /// Pomodoro timer
 #[derive(Parser)]
+#[command(version)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
