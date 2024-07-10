@@ -2,16 +2,16 @@ syntax = "proto3";
 package timer;
 
 service TimerService {
-  rpc Status(Empty) returns (Status);
-  rpc Pause(Empty) returns (Status);
-  rpc Resume(Empty) returns (Status);
-  rpc Stop(Empty) returns (Status);
+  rpc Status (Empty) returns (TimerStatus);
+  rpc Pause (Empty) returns (TimerStatus);
+  rpc Resume (Empty) returns (TimerStatus);
+  rpc Stop (Empty) returns (TimerStatus);
 }
 
 message Empty {
 
 }
 
-message Status {
+message TimerStatus {
   string status = 1;
 }

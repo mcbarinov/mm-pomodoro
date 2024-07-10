@@ -6,3 +6,10 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
 daemonize = "0.5.0"
+tonic = "0.12.0"
+prost = "0.13.0"
+tokio = { version = "1.38.0", features = ["full"] }
+tokio-stream = "0.1.15"
+
+[build-dependencies]
+tonic-build = "0.12.0"
