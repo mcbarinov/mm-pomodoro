@@ -9,6 +9,7 @@ use tokio_stream::wrappers::UnixListenerStream;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 
+use crate::notification::send_notification;
 use crate::timer_grpc::timer_service_server::{TimerService, TimerServiceServer};
 use crate::timer_grpc::{Empty, TimerStatus};
 
@@ -44,6 +45,8 @@ pub fn run(interval: u64) {
         Ok(_) => {
             println!("Daemon started");
             tokio::runtime::Runtime::new().unwrap().block_on(start_grpc_server(interval)).unwrap();
+            send_notification();
+            println!("done!");
         }
         Err(e) => {
             eprintln!("Error, {}", e)
@@ -63,7 +66,6 @@ async fn start_grpc_server(interval: u64) -> Result<(), Box<dyn std::error::Erro
     tokio::spawn(async move {
         tokio::time::sleep(Duration::from_secs(interval)).await;
         notify_clone.notify_one();
-        println!("timer!");
     });
 
     println!("Listening on: {}", path);
