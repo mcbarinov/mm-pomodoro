@@ -5,7 +5,7 @@ use std::time::Duration;
 use chrono::{DateTime, Local};
 use daemonize::Daemonize;
 use tokio::net::UnixListener;
-use tokio::sync::Notify;
+use tokio::sync::{Mutex, Notify};
 use tokio_stream::wrappers::UnixListenerStream;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
@@ -16,18 +16,19 @@ use crate::timer_grpc::{Empty, TimerStatus};
 
 #[derive(Debug, Clone)]
 pub struct RpcService {
-    state: Arc<State>,
+    state: Arc<Mutex<State>>,
 }
 
 #[derive(Debug)]
 pub struct State {
     pub started_at: DateTime<Local>,
     pub finished_at: DateTime<Local>,
+    pub stopped: bool,
 }
 
 impl State {
     pub fn new(interval: u64) -> Self {
-        Self { started_at: Local::now(), finished_at: Local::now() + Duration::from_secs(interval) }
+        Self { started_at: Local::now(), finished_at: Local::now() + Duration::from_secs(interval), stopped: false }
     }
 
     pub fn timer_status(&self) -> TimerStatus {
@@ -38,7 +39,7 @@ impl State {
 }
 
 impl RpcService {
-    pub fn new(state: Arc<State>) -> Self {
+    pub fn new(state: Arc<Mutex<State>>) -> Self {
         Self { state }
     }
 }
@@ -46,19 +47,21 @@ impl RpcService {
 #[tonic::async_trait]
 impl TimerService for RpcService {
     async fn status(&self, _request: Request<Empty>) -> Result<Response<TimerStatus>, Status> {
-        Ok(Response::new(self.state.timer_status()))
+        Ok(Response::new(self.state.lock().await.timer_status()))
     }
 
     async fn pause(&self, _request: Request<Empty>) -> Result<Response<TimerStatus>, Status> {
-        Ok(Response::new(self.state.timer_status()))
+        Ok(Response::new(self.state.lock().await.timer_status()))
     }
 
     async fn resume(&self, _request: Request<Empty>) -> Result<Response<TimerStatus>, Status> {
-        Ok(Response::new(self.state.timer_status()))
+        Ok(Response::new(self.state.lock().await.timer_status()))
     }
 
     async fn stop(&self, _request: Request<Empty>) -> Result<Response<TimerStatus>, Status> {
-        Ok(Response::new(self.state.timer_status()))
+        println!("stop");
+        self.state.lock().await.stopped = true;
+        Ok(Response::new(self.state.lock().await.timer_status()))
     }
 }
 
@@ -90,16 +93,16 @@ async fn start_grpc_server(interval: u64) -> Result<(), Box<dyn std::error::Erro
     let notify = Arc::new(Notify::new());
     let notify_clone = Arc::clone(&notify);
 
-    let state = Arc::new(State::new(interval));
+    let state = Arc::new(Mutex::new(State::new(interval)));
     let state_clone = Arc::clone(&state);
 
-    let rpc_service = RpcService::new(Arc::clone(&state));
+    let rpc_service = RpcService::new(state);
 
     tokio::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(1)).await;
             println!("tick");
-            if Local::now() > state_clone.finished_at {
+            if Local::now() > state_clone.lock().await.finished_at || state_clone.lock().await.stopped {
                 notify_clone.notify_one();
                 break;
             }
