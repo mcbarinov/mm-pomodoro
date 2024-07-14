@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 
 use crate::command;
+use crate::config::Config;
 
 /// Pomodoro timer
 #[derive(Parser)]
@@ -37,13 +38,13 @@ enum Commands {
     Stop,
 }
 
-pub fn run() {
+pub fn run(config: &Config) {
     let cli = Cli::parse();
     match cli.command() {
-        Commands::Status => command::status_run(),
-        Commands::Pause => command::pause_run(),
-        Commands::Resume => command::resume_run(),
-        Commands::Stop => command::stop_run(),
-        Commands::Start { interval } => command::start_run(interval),
+        Commands::Status => command::status_run(config),
+        Commands::Pause => command::pause_run(config),
+        Commands::Resume => command::resume_run(config),
+        Commands::Stop => command::stop_run(config),
+        Commands::Start { interval } => command::start_run(interval, config),
     }
 }

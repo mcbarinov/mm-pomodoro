@@ -1,4 +1,3 @@
-use std::process;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -10,25 +9,28 @@ use tonic::transport::{Channel, Endpoint, Server, Uri};
 use tonic::{Request, Response, Status};
 use tower::service_fn;
 
+use crate::config::Config;
 use crate::timer_grpc::timer_service_client::TimerServiceClient;
 use crate::timer_grpc::timer_service_server::{TimerService, TimerServiceServer};
 use crate::timer_grpc::{Empty, State};
 
-pub async fn connect_client_or_exit() -> TimerServiceClient<Channel> {
-    match Endpoint::try_from("http://[::]:50051")
-        .unwrap()
-        .connect_with_connector(service_fn(|_: Uri| async {
-            let path = "/tmp/ptimer.sock";
-            Ok::<_, std::io::Error>(TokioIo::new(UnixStream::connect(path).await?))
-        }))
-        .await
-    {
+pub async fn connect_client_or_exit(config: &Config) -> TimerServiceClient<Channel> {
+    match connect_channel(&config.grpc_uds_path).await {
         Ok(channel) => TimerServiceClient::new(channel),
         Err(_) => {
-            println!("is ptimer running?");
-            process::exit(0)
+            println!("Is ptimer running?");
+            std::process::exit(0);
         }
     }
+}
+
+async fn connect_channel(uds_path: &str) -> Result<Channel, tonic::transport::Error> {
+    let channel = Endpoint::try_from(format!("http://[::]:50051/{}", uds_path))?
+        .connect_with_connector(service_fn(move |u: Uri| async move {
+            Ok::<_, std::io::Error>(TokioIo::new(UnixStream::connect(u.path()).await?))
+        }))
+        .await?;
+    Ok(channel)
 }
 
 #[derive(Debug, Clone)]
@@ -64,10 +66,9 @@ impl TimerService for RpcService {
     }
 }
 
-pub async fn start_grpc_server(interval: u64) -> Result<(), Box<dyn std::error::Error>> {
-    let path = "/tmp/ptimer.sock";
-    let _ = tokio::fs::remove_file(path).await; // TODO: ?
-    let uds = UnixListener::bind(path)?;
+pub async fn start_grpc_server(interval: u64, config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+    let _ = tokio::fs::remove_file(&config.grpc_uds_path).await; // TODO: ?
+    let uds = UnixListener::bind(&config.grpc_uds_path)?;
     let uds_stream = UnixListenerStream::new(uds);
 
     let notify = Arc::new(Notify::new());
@@ -88,7 +89,7 @@ pub async fn start_grpc_server(interval: u64) -> Result<(), Box<dyn std::error::
         }
     });
 
-    println!("Listening on: {}", path);
+    println!("Listening on: {}", &config.grpc_uds_path);
     Server::builder()
         .add_service(TimerServiceServer::new(RpcService::new(state)))
         .serve_with_incoming_shutdown(uds_stream, async {

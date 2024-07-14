@@ -1,11 +1,17 @@
-pub use cli::run;
+use crate::config::Config;
 
 mod cli;
 mod command;
+mod config;
 mod grpc;
 mod notification;
 mod state;
 
 pub mod timer_grpc {
     tonic::include_proto!("timer");
+}
+
+pub fn run() {
+    let config = Config::new();
+    cli::run(&config);
 }
