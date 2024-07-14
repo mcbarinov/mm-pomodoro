@@ -10,9 +10,8 @@ async fn run_() -> Result<(), Box<dyn error::Error>> {
     let mut client = connect_client_or_exit().await;
 
     match client.status(tonic::Request::new(crate::timer_grpc::Empty {})).await {
-        Ok(status) => {
-            let status = status.into_inner();
-            println!("{:?}", status);
+        Ok(state) => {
+            state.into_inner().pretty_print();
         }
         Err(err) => {
             dbg!(err);

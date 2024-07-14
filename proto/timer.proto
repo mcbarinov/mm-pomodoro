@@ -2,18 +2,20 @@ syntax = "proto3";
 package timer;
 
 service TimerService {
-  rpc Status (Empty) returns (TimerStatus);
-  rpc Pause (Empty) returns (TimerStatus);
-  rpc Resume (Empty) returns (TimerStatus);
-  rpc Stop (Empty) returns (TimerStatus);
+  rpc Status (Empty) returns (State);
+  rpc Pause (Empty) returns (State);
+  rpc Resume (Empty) returns (State);
+  rpc Stop (Empty) returns (State);
 }
 
 message Empty {
 
 }
 
-message TimerStatus {
+message State {
   int64 started_at = 1;
-  int64 seconds_remaining = 2;
-  bool paused = 3;
+  int64 finish_at = 2;
+  bool stopped = 3;
+  bool paused = 4;
+  int64 paused_seconds = 5;
 }
