@@ -66,7 +66,7 @@ impl TimerService for RpcService {
     }
 }
 
-pub async fn start_grpc_server(interval: u64, config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn start_grpc_server(interval: u64, config: &Config) -> Result<(), anyhow::Error> {
     let _ = tokio::fs::remove_file(&config.grpc_uds_path).await; // TODO: ?
     let uds = UnixListener::bind(&config.grpc_uds_path)?;
     let uds_stream = UnixListenerStream::new(uds);

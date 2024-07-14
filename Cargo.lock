@@ -885,6 +885,7 @@ dependencies = [
 name = "ptimer"
 version = "0.0.3"
 dependencies = [
+ "anyhow",
  "chrono",
  "clap",
  "daemonize",
