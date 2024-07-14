@@ -21,20 +21,51 @@ pub struct RpcService {
 
 #[derive(Debug)]
 pub struct State {
-    pub started_at: DateTime<Local>,
-    pub finished_at: DateTime<Local>,
-    pub stopped: bool,
+    started_at: DateTime<Local>,
+    finished_at: DateTime<Local>,
+    stopped: bool,
+    paused: bool,
+    paused_seconds: i64, // how many seconds remaining when paused
 }
 
 impl State {
     pub fn new(interval: u64) -> Self {
-        Self { started_at: Local::now(), finished_at: Local::now() + Duration::from_secs(interval), stopped: false }
+        Self {
+            started_at: Local::now(),
+            finished_at: Local::now() + Duration::from_secs(interval),
+            stopped: false,
+            paused: false,
+            paused_seconds: 0,
+        }
+    }
+
+    pub fn need_to_stop(&self) -> bool {
+        self.stopped || (Local::now() > self.finished_at && !self.paused)
+    }
+
+    pub fn pause(&mut self) {
+        if self.paused {
+            return;
+        }
+        self.paused = true;
+        self.paused_seconds = (self.finished_at - Local::now()).num_seconds();
+    }
+
+    pub fn resume(&mut self) {
+        if !self.paused {
+            return;
+        }
+        self.paused = false;
+        self.finished_at = Local::now() + Duration::from_secs(self.paused_seconds as u64);
     }
 
     pub fn timer_status(&self) -> TimerStatus {
-        let diff = self.finished_at - Local::now();
-        let diff_in_seconds = diff.num_seconds();
-        TimerStatus { started_at: self.started_at.timestamp(), seconds_remaining: diff_in_seconds }
+        let seconds_remaining = if self.paused { self.paused_seconds } else { (self.finished_at - Local::now()).num_seconds() };
+        TimerStatus { started_at: self.started_at.timestamp(), seconds_remaining, paused: self.paused }
+    }
+
+    pub fn stop(&mut self) {
+        self.stopped = true;
     }
 }
 
@@ -51,16 +82,18 @@ impl TimerService for RpcService {
     }
 
     async fn pause(&self, _request: Request<Empty>) -> Result<Response<TimerStatus>, Status> {
+        self.state.lock().await.pause();
         Ok(Response::new(self.state.lock().await.timer_status()))
     }
 
     async fn resume(&self, _request: Request<Empty>) -> Result<Response<TimerStatus>, Status> {
+        self.state.lock().await.resume();
         Ok(Response::new(self.state.lock().await.timer_status()))
     }
 
     async fn stop(&self, _request: Request<Empty>) -> Result<Response<TimerStatus>, Status> {
         println!("stop");
-        self.state.lock().await.stopped = true;
+        self.state.lock().await.stop();
         Ok(Response::new(self.state.lock().await.timer_status()))
     }
 }
@@ -96,22 +129,20 @@ async fn start_grpc_server(interval: u64) -> Result<(), Box<dyn std::error::Erro
     let state = Arc::new(Mutex::new(State::new(interval)));
     let state_clone = Arc::clone(&state);
 
-    let rpc_service = RpcService::new(state);
-
     tokio::spawn(async move {
         loop {
-            tokio::time::sleep(Duration::from_secs(1)).await;
-            println!("tick");
-            if Local::now() > state_clone.lock().await.finished_at || state_clone.lock().await.stopped {
+            // Check if we need to stop the timer
+            if state_clone.lock().await.need_to_stop() {
                 notify_clone.notify_one();
                 break;
             }
+            tokio::time::sleep(Duration::from_secs(1)).await;
         }
     });
 
     println!("Listening on: {}", path);
     Server::builder()
-        .add_service(TimerServiceServer::new(rpc_service))
+        .add_service(TimerServiceServer::new(RpcService::new(state)))
         .serve_with_incoming_shutdown(uds_stream, async {
             notify.notified().await;
             println!("Shutting down...");

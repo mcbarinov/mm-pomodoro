@@ -1,7 +1,5 @@
 use std::error;
 
-use chrono::{TimeZone, Utc};
-
 use crate::grpc::connect_client_or_exit;
 
 pub fn run() {
@@ -14,9 +12,7 @@ async fn run_() -> Result<(), Box<dyn error::Error>> {
     match client.status(tonic::Request::new(crate::timer_grpc::Empty {})).await {
         Ok(status) => {
             let status = status.into_inner();
-            let r = Utc.timestamp_opt(status.started_at, 0).unwrap();
-            let message = format!("started at: {}\nseconds remaining: {}", r, status.seconds_remaining);
-            println!("{}", message);
+            println!("{:?}", status);
         }
         Err(err) => {
             dbg!(err);
