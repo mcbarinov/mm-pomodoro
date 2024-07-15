@@ -21,8 +21,8 @@ impl Cli {
 enum Commands {
     /// Start a new pomodoro timer
     Start {
-        #[arg(help = "Interval in seconds")]
-        interval: u64,
+        #[arg(help = "Durations. For example, 1h20m30s. The default unit is minutes, so 30 means 30 minutes.")]
+        duration: String,
     },
 
     /// Show the current status of the timer
@@ -45,6 +45,13 @@ pub fn run(config: &Config) {
         Commands::Pause => command::pause_run(config),
         Commands::Resume => command::resume_run(config),
         Commands::Stop => command::stop_run(config),
-        Commands::Start { interval } => command::start_run(interval, config),
+        Commands::Start { mut duration } => {
+            // If the duration is a number, it's in minutes
+            if duration.parse::<u64>().is_ok() {
+                duration = format!("{}m", duration);
+            }
+            let duration = humantime::parse_duration(&duration).expect("Invalid duration, use 1h20m30s format");
+            command::start_run(duration, config);
+        }
     }
 }
