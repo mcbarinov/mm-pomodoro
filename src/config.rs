@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, fs};
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -16,6 +16,7 @@ impl Config {
         if cfg!(debug_assertions) {
             app_dir = format!("{app_dir}-dev");
         }
+        fs::create_dir_all(&app_dir).expect(format!("Can't create app dir: {}", &app_dir).as_str());
         Self {
             daemon_pidfile: format!("{}/ptimer.pid", app_dir),
             daemon_stdout: format!("{}/stdout.log", app_dir),
