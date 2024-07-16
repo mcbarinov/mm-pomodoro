@@ -20,7 +20,8 @@ impl Cli {
 #[derive(Subcommand, Clone)]
 enum Commands {
     /// Start a new pomodoro timer
-    Start {
+    #[command(name = "new", visible_alias = "n")]
+    New {
         #[arg(help = "Durations. For example, 1h20m30s. The default unit is minutes, so 30 means 30 minutes.")]
         duration: String,
     },
@@ -29,15 +30,19 @@ enum Commands {
     Status,
 
     /// Pause the current timer
+    #[command(name = "pause", visible_alias = "p")]
     Pause,
 
     /// Resume the current timer
+    #[command(name = "resume", visible_alias = "r")]
     Resume,
 
     /// Stop the current timer
+    #[command(name = "stop")]
     Stop,
 
     /// Show the history of finished timers
+    #[command(name = "history", visible_alias = "h")]
     History,
 }
 
@@ -49,13 +54,13 @@ pub fn run(config: &Config) {
         Commands::Resume => command::resume_run(config),
         Commands::Stop => command::stop_run(config),
         Commands::History => command::history_run(config),
-        Commands::Start { mut duration } => {
+        Commands::New { mut duration } => {
             // If the duration is a number, it's in minutes
             if duration.parse::<u64>().is_ok() {
                 duration = format!("{}m", duration);
             }
             let duration = humantime::parse_duration(&duration).expect("Invalid duration, use 1h20m30s format");
-            command::start_run(duration, config);
+            command::new_run(duration, config);
         }
     }
 }
