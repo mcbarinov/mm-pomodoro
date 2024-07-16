@@ -13,9 +13,10 @@ message Empty {
 }
 
 message State {
-  int64 started_at = 1;
-  int64 finish_at = 2;
-  bool stopped = 3;
-  bool paused = 4;
-  int64 paused_seconds = 5;
+  uint64 duration = 1;
+  int64 started_at = 2;
+  int64 finish_at = 3;
+  bool stopped = 4;
+  bool paused = 5;
+  int64 paused_seconds = 6;
 }

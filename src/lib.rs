@@ -3,6 +3,7 @@ use crate::config::Config;
 mod cli;
 mod command;
 mod config;
+mod db;
 mod grpc;
 mod notification;
 mod state;

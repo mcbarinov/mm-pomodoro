@@ -10,6 +10,7 @@ use tonic::{Request, Response, Status};
 use tower::service_fn;
 
 use crate::config::Config;
+use crate::db::insert_history;
 use crate::timer_grpc::timer_service_client::TimerServiceClient;
 use crate::timer_grpc::timer_service_server::{TimerService, TimerServiceServer};
 use crate::timer_grpc::{Empty, State};
@@ -77,11 +78,14 @@ pub async fn start_grpc_server(interval: u64, config: &Config) -> Result<(), any
     tokio::spawn({
         let notify_clone = Arc::clone(&notify);
         let state_clone = Arc::clone(&state);
+        let config_clone = config.clone();
         async move {
             loop {
                 // Check if we need to stop the timer
-                if state_clone.lock().await.need_to_stop() {
+                let state = state_clone.lock().await;
+                if state.need_to_stop() {
                     notify_clone.notify_one();
+                    insert_history(&config_clone, state.started_at, state.duration).unwrap();
                     break;
                 }
                 tokio::time::sleep(Duration::from_secs(1)).await;

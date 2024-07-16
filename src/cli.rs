@@ -36,6 +36,9 @@ enum Commands {
 
     /// Stop the current timer
     Stop,
+
+    /// Show the history of finished timers
+    History,
 }
 
 pub fn run(config: &Config) {
@@ -45,6 +48,7 @@ pub fn run(config: &Config) {
         Commands::Pause => command::pause_run(config),
         Commands::Resume => command::resume_run(config),
         Commands::Stop => command::stop_run(config),
+        Commands::History => command::history_run(config),
         Commands::Start { mut duration } => {
             // If the duration is a number, it's in minutes
             if duration.parse::<u64>().is_ok() {

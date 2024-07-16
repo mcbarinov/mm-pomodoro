@@ -7,6 +7,7 @@ use crate::timer_grpc::State;
 impl State {
     pub fn new(interval: u64) -> Self {
         Self {
+            duration: interval,
             started_at: Local::now().timestamp(),
             finish_at: (Local::now() + Duration::from_secs(interval)).timestamp(),
             stopped: false,
