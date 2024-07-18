@@ -1,7 +1,7 @@
 [package]
 name = "ptimer"
 description = "A simple cli pomodoro timer. It sends notifications to the user when the timer is up. Works on macOS only."
-version = "0.0.7"
+version = "0.0.8"
 edition = "2021"
 license = "Unlicense"
 

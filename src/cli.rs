@@ -54,25 +54,32 @@ enum Commands {
             default_value_t = false
         )]
         all: bool,
+
+        #[arg(long, help = "Print the ID of the history")]
+        print_id: bool,
     },
+
+    /// Delete a history by ID
+    DeleteHistory { id: u32 },
 }
 
 pub fn run(config: &Config) {
     let cli = Cli::parse();
     match cli.command() {
-        Commands::Status => run_async(cmd::status_run(config)),
-        Commands::Pause => run_async(cmd::pause_run(config)),
-        Commands::Resume => run_async(cmd::resume_run(config)),
-        Commands::Stop => run_async(cmd::stop_run(config)),
-        Commands::History { all } => cmd::history_run(config, all),
+        Commands::Status => run_async(cmd::status_cmd::run(config)),
+        Commands::Pause => run_async(cmd::pause_cmd::run(config)),
+        Commands::Resume => run_async(cmd::resume_cmd::run(config)),
+        Commands::Stop => run_async(cmd::stop_cmd::run(config)),
+        Commands::History { all, print_id } => cmd::history_cmd::run(config, all, print_id),
         Commands::New { mut duration } => {
             // If the duration is a number, it's in minutes
             if duration.parse::<u64>().is_ok() {
                 duration = format!("{}m", duration);
             }
             let duration = humantime::parse_duration(&duration).expect("Invalid duration, use 1h20m30s format");
-            cmd::new_run(duration, config);
+            cmd::new_cmd::run(duration, config);
         }
+        Commands::DeleteHistory { id } => cmd::delete_history_cmd::run(config, id),
     }
 }
 

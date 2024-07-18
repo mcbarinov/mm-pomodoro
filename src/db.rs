@@ -14,8 +14,13 @@ pub struct History {
 }
 
 impl History {
-    pub fn pretty_print(&self) {
-        println!("{} / {}", self.started_at, humantime::format_duration(Duration::from_secs(self.duration)));
+    pub fn pretty_print(&self, print_id: bool) {
+        let duration = humantime::format_duration(Duration::from_secs(self.duration));
+        if print_id {
+            println!("{} / {} / {}", self.id, self.started_at, duration);
+        } else {
+            println!("{} / {}", self.started_at, duration);
+        }
     }
 }
 
@@ -23,6 +28,12 @@ pub fn insert_history(config: &Config, started_at: i64, duration: u64) -> Result
     let started_at = Local.timestamp_opt(started_at, 0).unwrap();
     let conn = get_db(config)?;
     conn.execute("INSERT INTO history (started_at, duration) VALUES (?1, ?2)", params![started_at, duration])?;
+    Ok(())
+}
+
+pub fn delete_history(config: &Config, id: u32) -> Result<(), anyhow::Error> {
+    let conn = get_db(config)?;
+    conn.execute("DELETE FROM history WHERE id = ?1", params![id])?;
     Ok(())
 }
 
