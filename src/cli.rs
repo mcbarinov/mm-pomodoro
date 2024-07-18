@@ -1,6 +1,9 @@
-use clap::{Parser, Subcommand};
+use std::future::Future;
 
-use crate::command;
+use clap::{Parser, Subcommand};
+use tokio::runtime::Runtime;
+
+use crate::cmd;
 use crate::config::Config;
 
 /// Pomodoro timer
@@ -57,18 +60,26 @@ enum Commands {
 pub fn run(config: &Config) {
     let cli = Cli::parse();
     match cli.command() {
-        Commands::Status => command::status_run(config),
-        Commands::Pause => command::pause_run(config),
-        Commands::Resume => command::resume_run(config),
-        Commands::Stop => command::stop_run(config),
-        Commands::History { all } => command::history_run(config, all),
+        Commands::Status => run_async(cmd::status_run(config)),
+        Commands::Pause => run_async(cmd::pause_run(config)),
+        Commands::Resume => run_async(cmd::resume_run(config)),
+        Commands::Stop => run_async(cmd::stop_run(config)),
+        Commands::History { all } => cmd::history_run(config, all),
         Commands::New { mut duration } => {
             // If the duration is a number, it's in minutes
             if duration.parse::<u64>().is_ok() {
                 duration = format!("{}m", duration);
             }
             let duration = humantime::parse_duration(&duration).expect("Invalid duration, use 1h20m30s format");
-            command::new_run(duration, config);
+            cmd::new_run(duration, config);
         }
     }
+}
+
+fn run_async<F, T>(f: F) -> T
+where
+    F: Future<Output = T>,
+{
+    let rt = Runtime::new().expect("Failed to create runtime");
+    rt.block_on(f)
 }

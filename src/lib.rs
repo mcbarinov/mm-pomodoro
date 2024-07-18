@@ -1,7 +1,7 @@
 use crate::config::Config;
 
 mod cli;
-mod command;
+mod cmd;
 mod config;
 mod db;
 mod grpc;
