@@ -15,13 +15,10 @@ use crate::timer_grpc::timer_service_client::TimerServiceClient;
 use crate::timer_grpc::timer_service_server::{TimerService, TimerServiceServer};
 use crate::timer_grpc::{Empty, State};
 
-pub async fn connect_client_or_exit(config: &Config) -> TimerServiceClient<Channel> {
+pub async fn connect_client(config: &Config) -> Option<TimerServiceClient<Channel>> {
     match connect_channel(&config.grpc_uds_path).await {
-        Ok(channel) => TimerServiceClient::new(channel),
-        Err(_) => {
-            println!("Is ptimer running?");
-            std::process::exit(0);
-        }
+        Ok(channel) => Some(TimerServiceClient::new(channel)),
+        Err(_) => None,
     }
 }
 
