@@ -1,9 +1,6 @@
 use crate::config::Config;
-use crate::db::query_history;
+use crate::history::print_history;
 
-pub fn run(config: &Config) {
-    let history = query_history(config).unwrap();
-    for h in history {
-        h.pretty_print();
-    }
+pub fn run(config: &Config, show_all: bool) {
+    print_history(config, show_all);
 }

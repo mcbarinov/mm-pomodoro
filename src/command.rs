@@ -6,8 +6,8 @@ pub use status::run as status_run;
 pub use stop::run as stop_run;
 
 pub(crate) mod history;
+pub(crate) mod new;
 pub(crate) mod pause;
 pub(crate) mod resume;
-pub(crate) mod new;
 pub(crate) mod status;
 pub(crate) mod stop;

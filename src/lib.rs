@@ -5,6 +5,7 @@ mod command;
 mod config;
 mod db;
 mod grpc;
+mod history;
 mod notification;
 mod state;
 

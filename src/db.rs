@@ -7,19 +7,15 @@ use crate::config::Config;
 
 #[derive(Debug)]
 pub struct History {
-    id: i64,
-    started_at: DateTime<Local>,
-    duration: u64,
+    #[allow(dead_code)]
+    pub id: i64,
+    pub started_at: DateTime<Local>,
+    pub duration: u64,
 }
 
 impl History {
     pub fn pretty_print(&self) {
-        println!(
-            "id: {}, started_at: {}, duration: {}",
-            self.id,
-            self.started_at,
-            humantime::format_duration(Duration::from_secs(self.duration))
-        );
+        println!("{} / {}", self.started_at, humantime::format_duration(Duration::from_secs(self.duration)));
     }
 }
 
@@ -33,7 +29,8 @@ pub fn insert_history(config: &Config, started_at: i64, duration: u64) -> Result
 pub fn query_history(config: &Config) -> Result<Vec<History>, anyhow::Error> {
     let conn = get_db(config)?;
     let mut stmt = conn.prepare("SELECT id, started_at, duration FROM history ORDER BY started_at DESC limit 100")?;
-    let iter = stmt.query_map([], |row| Ok(History { id: row.get(0)?, started_at: row.get(1)?, duration: row.get(2)? }))?;
+    let iter =
+        stmt.query_map(params![], |row| Ok(History { id: row.get(0)?, started_at: row.get(1)?, duration: row.get(2)? }))?;
 
     let mut result = Vec::new();
     for data in iter {

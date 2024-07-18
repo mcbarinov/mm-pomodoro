@@ -43,7 +43,15 @@ enum Commands {
 
     /// Show the history of finished timers
     #[command(name = "history", visible_alias = "h")]
-    History,
+    History {
+        #[arg(
+            short,
+            long,
+            help = "Show all recent history. Buy default, only today's history is shown.",
+            default_value_t = false
+        )]
+        all: bool,
+    },
 }
 
 pub fn run(config: &Config) {
@@ -53,7 +61,7 @@ pub fn run(config: &Config) {
         Commands::Pause => command::pause_run(config),
         Commands::Resume => command::resume_run(config),
         Commands::Stop => command::stop_run(config),
-        Commands::History => command::history_run(config),
+        Commands::History { all } => command::history_run(config, all),
         Commands::New { mut duration } => {
             // If the duration is a number, it's in minutes
             if duration.parse::<u64>().is_ok() {
