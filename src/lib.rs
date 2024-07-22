@@ -10,6 +10,7 @@ mod notification;
 mod state;
 
 pub mod timer_grpc {
+    #![allow(clippy::all, clippy::pedantic, clippy::nursery)]
     tonic::include_proto!("timer");
 }
 

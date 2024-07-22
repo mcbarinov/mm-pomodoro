@@ -13,18 +13,18 @@ pub struct Config {
 impl Config {
     pub fn new() -> Self {
         let home_dir = env::var("HOME").expect("Can't get HOME env");
-        let mut app_dir = format!("{}/.local/ptimer", home_dir);
+        let mut app_dir = format!("{home_dir}/.local/ptimer");
         let debug_mode = cfg!(debug_assertions);
         if debug_mode {
             app_dir = format!("{app_dir}-dev");
         }
-        fs::create_dir_all(&app_dir).unwrap_or_else(|_| panic!("Can't create app dir: {}", &app_dir));
+        fs::create_dir_all(&app_dir).unwrap_or_else(|_| panic!("Can't create app dir: {app_dir}"));
         Self {
-            daemon_pidfile: format!("{}/ptimer.pid", app_dir),
-            daemon_stdout: format!("{}/stdout.log", app_dir),
-            daemon_stderr: format!("{}/stderr.log", app_dir),
-            grpc_uds_path: format!("{}/grpc.sock", app_dir),
-            db_path: format!("{}/ptimer.db", app_dir),
+            daemon_pidfile: format!("{app_dir}/ptimer.pid"),
+            daemon_stdout: format!("{app_dir}/stdout.log"),
+            daemon_stderr: format!("{app_dir}/stderr.log"),
+            grpc_uds_path: format!("{app_dir}/grpc.sock"),
+            db_path: format!("{app_dir}/ptimer.db"),
             debug_mode,
         }
     }

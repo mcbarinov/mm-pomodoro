@@ -74,7 +74,7 @@ pub fn run(config: &Config) {
         Commands::New { mut duration } => {
             // If the duration is a number, it's in minutes
             if duration.parse::<u64>().is_ok() {
-                duration = format!("{}m", duration);
+                duration = format!("{duration}m");
             }
             let duration = humantime::parse_duration(&duration).expect("Invalid duration, use 1h20m30s format");
             cmd::new_cmd::run(duration, config);

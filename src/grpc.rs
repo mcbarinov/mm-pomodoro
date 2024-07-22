@@ -23,7 +23,7 @@ pub async fn connect_client(config: &Config) -> Option<TimerServiceClient<Channe
 }
 
 async fn connect_channel(uds_path: &str) -> Result<Channel, tonic::transport::Error> {
-    let channel = Endpoint::try_from(format!("http://[::]:50051/{}", uds_path))?
+    let channel = Endpoint::try_from(format!("http://[::]:50051/{uds_path}"))?
         .connect_with_connector(service_fn(move |u: Uri| async move {
             Ok::<_, std::io::Error>(TokioIo::new(UnixStream::connect(u.path()).await?))
         }))

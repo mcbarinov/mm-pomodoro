@@ -49,14 +49,14 @@ impl State {
         let finish_at = Local.timestamp_opt(self.finish_at, 0).unwrap();
 
         if self.stopped {
-            println!("stopped! started at: {}", started_at);
+            println!("stopped! started at: {started_at}");
         } else if self.paused {
             let left = humantime::format_duration(Duration::from_secs(self.paused_seconds as u64));
-            println!("paused! {} left, started at: {}, finish at: {}", left, started_at, finish_at);
+            println!("paused! {left} left, started at: {started_at}, finish at: {finish_at}");
         } else {
             let remaining_seconds = self.finish_at - Local::now().timestamp();
             let humanized_duration = humantime::format_duration(Duration::from_secs(remaining_seconds as u64));
-            println!("{} left, started at: {}, finish at: {}", humanized_duration, started_at, finish_at);
+            println!("{humanized_duration} left, started at: {started_at}, finish at: {finish_at}");
         }
     }
 }

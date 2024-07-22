@@ -15,12 +15,12 @@ pub fn run(duration: Duration, config: &Config) {
 
     println!("starting a new timer with duration: {}", format_duration(duration));
     match daemon.start() {
-        Ok(_) => {
+        Ok(()) => {
             tokio::runtime::Runtime::new().unwrap().block_on(start_grpc_server(duration.as_secs(), config)).unwrap();
             send_notification(config);
         }
         Err(e) => {
-            eprintln!("Error, {}", e)
+            eprintln!("Error, {e}");
         }
     }
 }
