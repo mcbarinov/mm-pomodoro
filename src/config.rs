@@ -2,6 +2,7 @@ use std::{env, fs};
 
 #[derive(Debug, Clone)]
 pub struct Config {
+    pub debug_mode: bool,
     pub daemon_pidfile: String,
     pub daemon_stdout: String,
     pub daemon_stderr: String,
@@ -13,7 +14,8 @@ impl Config {
     pub fn new() -> Self {
         let home_dir = env::var("HOME").expect("Can't get HOME env");
         let mut app_dir = format!("{}/.local/ptimer", home_dir);
-        if cfg!(debug_assertions) {
+        let debug_mode = cfg!(debug_assertions);
+        if debug_mode {
             app_dir = format!("{app_dir}-dev");
         }
         fs::create_dir_all(&app_dir).unwrap_or_else(|_| panic!("Can't create app dir: {}", &app_dir));
@@ -23,6 +25,7 @@ impl Config {
             daemon_stderr: format!("{}/stderr.log", app_dir),
             grpc_uds_path: format!("{}/grpc.sock", app_dir),
             db_path: format!("{}/ptimer.db", app_dir),
+            debug_mode,
         }
     }
 }
