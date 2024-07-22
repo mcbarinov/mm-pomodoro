@@ -80,8 +80,13 @@ pub async fn start_grpc_server(interval: u64, config: &Config) -> Result<(), any
             loop {
                 // Check if we need to stop the timer
                 let state = state_clone.lock().await;
-                if state.need_to_stop() {
+
+                if state.is_stopped() {
                     notify_clone.notify_one();
+                    break;
+                } else if state.is_truely_finished() {
+                    notify_clone.notify_one();
+                    // Create history only if the timer is finished, not stopped
                     insert_history(&config_clone, state.started_at, state.duration).unwrap();
                     break;
                 }

@@ -16,8 +16,12 @@ impl State {
         }
     }
 
-    pub fn need_to_stop(&self) -> bool {
-        self.stopped || (Local::now().timestamp() > self.finish_at && !self.paused)
+    pub fn is_stopped(&self) -> bool {
+        self.stopped
+    }
+
+    pub fn is_truely_finished(&self) -> bool {
+        !self.stopped && Local::now().timestamp() > self.finish_at
     }
 
     pub fn pause(&mut self) {
