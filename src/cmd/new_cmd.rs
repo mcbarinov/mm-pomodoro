@@ -6,7 +6,6 @@ use humantime::format_duration;
 
 use crate::config::Config;
 use crate::grpc::start_grpc_server;
-use crate::notification::send_notification;
 
 pub fn run(duration: Duration, config: &Config) {
     let stdout = File::create(&config.daemon_stdout).unwrap();
@@ -17,7 +16,6 @@ pub fn run(duration: Duration, config: &Config) {
     match daemon.start() {
         Ok(()) => {
             tokio::runtime::Runtime::new().unwrap().block_on(start_grpc_server(duration.as_secs(), config)).unwrap();
-            send_notification(config);
         }
         Err(e) => {
             eprintln!("Error, {e}");

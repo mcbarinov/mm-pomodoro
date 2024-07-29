@@ -1,23 +1,23 @@
 [package]
 name = "ptimer"
 description = "A simple cli pomodoro timer. It sends notifications to the user when the timer is up. Works on macOS only."
-version = "0.0.9"
+version = "0.0.10"
 edition = "2021"
 license = "Unlicense"
 
 [dependencies]
-clap = { version = "4.5.9", features = ["derive"] }
+clap = { version = "4.5.11", features = ["derive"] }
 daemonize = "0.5.0"
 tonic = "0.12.1"
 prost = "0.13.1"
-tokio = { version = "1.38.1", features = ["full"] }
+tokio = { version = "1.39.2", features = ["full"] }
 tokio-stream = "0.1.15"
 tower = "0.4.13"
 hyper-util = "0.1.6"
 chrono = "0.4.38"
 anyhow = "1.0.86"
 humantime = "2.1.0"
-rusqlite = { version = "0.32.0", features = ["bundled", "chrono"] }
+rusqlite = { version = "0.32.1", features = ["bundled", "chrono"] }
 
 [build-dependencies]
 tonic-build = "0.12.1"

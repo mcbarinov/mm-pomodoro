@@ -5,15 +5,16 @@ use hyper_util::rt::TokioIo;
 use tokio::net::{UnixListener, UnixStream};
 use tokio::sync::{Mutex, Notify};
 use tokio_stream::wrappers::UnixListenerStream;
-use tonic::transport::{Channel, Endpoint, Server, Uri};
 use tonic::{Request, Response, Status};
+use tonic::transport::{Channel, Endpoint, Server, Uri};
 use tower::service_fn;
 
 use crate::config::Config;
 use crate::db::insert_history;
+use crate::notification::send_notification;
+use crate::timer_grpc::{Empty, State};
 use crate::timer_grpc::timer_service_client::TimerServiceClient;
 use crate::timer_grpc::timer_service_server::{TimerService, TimerServiceServer};
-use crate::timer_grpc::{Empty, State};
 
 pub async fn connect_client(config: &Config) -> Option<TimerServiceClient<Channel>> {
     match connect_channel(&config.grpc_uds_path).await {
@@ -78,15 +79,15 @@ pub async fn start_grpc_server(interval: u64, config: &Config) -> Result<(), any
         let config_clone = config.clone();
         async move {
             loop {
-                // Check if we need to stop the timer
                 let state = state_clone.lock().await;
-
                 if state.is_stopped() {
                     notify_clone.notify_one();
                     break;
                 } else if state.is_truely_finished() {
+                    let duration = humantime::format_duration(Duration::from_secs(state.duration));
+                    let msg = format!("Timer finished! Duration: {duration}");
+                    send_notification(&config_clone, &msg);
                     notify_clone.notify_one();
-                    // Create history only if the timer is finished, not stopped
                     insert_history(&config_clone, state.started_at, state.duration).unwrap();
                     break;
                 }
