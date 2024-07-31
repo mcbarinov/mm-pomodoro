@@ -1,5 +1,5 @@
 [package]
-name = "ptimer"
+name = "mm-pomodoro"
 description = "A simple cli pomodoro timer. It sends notifications to the user when the timer is up. Works on macOS only."
 version = "0.1.0"
 edition = "2021"

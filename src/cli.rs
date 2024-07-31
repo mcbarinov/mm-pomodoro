@@ -27,7 +27,7 @@ enum Commands {
     New {
         #[arg(
             help = "Durations. For example, 1h20m30s. The default unit is minutes, so 30 means 30 minutes.",
-            env = "PTIMER_NEW_DURATION"
+            env = "MM_POMODORO_NEW_DURATION"
         )]
         duration: String,
     },

@@ -3,7 +3,7 @@ use std::process::Command;
 use crate::config::Config;
 
 pub fn send_notification(config: &Config, message: &str) {
-    let title = if config.debug_mode { "ptimer-dev" } else { "ptimer" };
+    let title = if config.debug_mode { "mm-pomodoro-dev" } else { "mm-pomodoro" };
     let script = format!("display notification \"{message}\" with title \"{title}\" sound name \"Basso\"");
     let output = Command::new("osascript").arg("-e").arg(script).output().expect("Failed to execute command");
 

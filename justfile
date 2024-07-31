@@ -2,4 +2,7 @@ lint:
     cargo fmt && cargo clippy
 
 lint-fix:
-  cargo clippy --fix --lib -p ptimer --allow-dirty
+  cargo clippy --fix --lib -p mm-pomodoro --allow-dirty
+
+publish:
+    cargo publish

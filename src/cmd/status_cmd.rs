@@ -4,7 +4,7 @@ use crate::history::print_history;
 
 pub async fn run(config: &Config) {
     let mut client = connect_client(config).await.unwrap_or_else(|| {
-        println!("ptimer is not running");
+        println!("mm-pomodoro is not running");
         print_history(config, false, false);
         std::process::exit(0);
     });
