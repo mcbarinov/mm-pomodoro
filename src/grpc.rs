@@ -5,16 +5,16 @@ use hyper_util::rt::TokioIo;
 use tokio::net::{UnixListener, UnixStream};
 use tokio::sync::{Mutex, Notify};
 use tokio_stream::wrappers::UnixListenerStream;
-use tonic::{Request, Response, Status};
 use tonic::transport::{Channel, Endpoint, Server, Uri};
+use tonic::{Request, Response, Status};
 use tower::service_fn;
 
 use crate::config::Config;
 use crate::db::insert_history;
 use crate::notification::send_notification;
-use crate::timer_grpc::{Empty, State};
 use crate::timer_grpc::timer_service_client::TimerServiceClient;
 use crate::timer_grpc::timer_service_server::{TimerService, TimerServiceServer};
+use crate::timer_grpc::{Empty, State};
 
 pub async fn connect_client(config: &Config) -> Option<TimerServiceClient<Channel>> {
     match connect_channel(&config.grpc_uds_path).await {

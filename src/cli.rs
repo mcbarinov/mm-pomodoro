@@ -25,7 +25,10 @@ enum Commands {
     /// Start a new pomodoro timer
     #[command(name = "new", visible_alias = "n")]
     New {
-        #[arg(help = "Durations. For example, 1h20m30s. The default unit is minutes, so 30 means 30 minutes.")]
+        #[arg(
+            help = "Durations. For example, 1h20m30s. The default unit is minutes, so 30 means 30 minutes.",
+            env = "PTIMER_NEW_DURATION"
+        )]
         duration: String,
     },
 
