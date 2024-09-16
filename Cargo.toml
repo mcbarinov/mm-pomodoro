@@ -1,19 +1,20 @@
 [package]
 name = "mm-pomodoro"
 description = "A simple cli pomodoro timer. It sends notifications to the user when the timer is up. Works on macOS only."
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "Unlicense"
 
 [dependencies]
-clap = { version = "4.5.11", features = ["derive", "env"] }
+clap = { version = "4.5.16", features = ["derive", "env"] }
 daemonize = "0.5.0"
 tonic = "0.12.1"
 prost = "0.13.1"
-tokio = { version = "1.39.2", features = ["full"] }
+tokio = { version = "1.39.3", features = ["full"] }
 tokio-stream = "0.1.15"
-tower = "0.4.13"
-hyper-util = "0.1.6"
+tower = {version = "0.5.0", features = ["util"] }
+
+hyper-util = "0.1.7"
 chrono = "0.4.38"
 anyhow = "1.0.86"
 humantime = "2.1.0"
